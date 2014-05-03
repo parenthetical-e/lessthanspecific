@@ -4,7 +4,13 @@ BINPATH=~/Code/modelmodel/bin
 # -----------------
 # Save some behave data
 # -----------------
-behave: behave50 behave50Hrf 
+remove:
+	-rm data/behave50_l.csv
+	-rm data/behave50_r.csv
+	-rm data/behave50_l_hrf.csv
+	-rm data/behave50_r_hrf.csv
+
+all: behave50 behave50Hrf 
 
 # No HRF
 behave50: data/behave50_l.csv data/behave50_r.csv

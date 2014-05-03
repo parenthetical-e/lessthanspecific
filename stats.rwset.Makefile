@@ -1,56 +1,40 @@
-SHELL:=/bin/bash
+SHELL := /bin/bash
 BINPATH=~/Code/modelmodel/bin
-
-
-# Quick test
-
-test: data/rwset10_*.csv data/rwset10_l_params_tvalue_conj.csv
-	
-data/rwset10_*.csv: data/rwset10_l.hdf5
-	python $(BINPATH)/extract.py \
-		--hdf data/rwset10_l.hdf5 \
-		--names \
-			data/rwset10_l_params_tvalue.csv \
-		 	data/rwset10_l_params_pvalue.csv \
-		--paths \
-			 /*/*/t \
-			 /*/*/p \
-		--dims 1 1
-
-data/rwset10_l_params_tvalue_conj.csv: data/rwset10_l_params_tvalue.csv data/rwset10_l_params_pvalue.csv
-	python $(BINPATH)/conjunction.py \
-		data/rwset10_l_params_tvalue_conj.csv \
-		data/rwset10_l_params_tvalue.csv \
-		data/rwset10_l_params_pvalue.csv \
-		--drop 0
-
+		
 # ---------
 # Get stats
 # ---------
-clean_extract: clean_rwset500_l clean_rwset500_r
+remove: remove_extract remove_conjuction
 	
-extract: data/rwset500_l*.csv data/rwset500_r*.csv
+all: extract conjunction
+
+# -------
+# EXTRACT
+# -------	
+remove_extract: remove_rwset1000_l remove_rwset1000_r
+	
+extract: stats/rwset1000_l*.csv stats/rwset1000_r*.csv
 	
 # set
 # learn
-clean_rwset500_l:
-	-rm data/rwset500_l_fvalue.csv
-	-rm data/rwset500_l_pvalue.csv
-	-rm data/rwset500_l_omni_fvalue.csv
-	-rm data/rwset500_l_params_tvalue.csv
-	-rm data/rwset500_l_params_pvalue.csv
-	-rm data/rwset500_l_aic.csv
+remove_rwset1000_l:
+	-rm stats/rwset1000_l_fvalue.csv
+	-rm stats/rwset1000_l_pvalue.csv
+	-rm stats/rwset1000_l_omni_fvalue.csv
+	-rm stats/rwset1000_l_params_tvalue.csv
+	-rm stats/rwset1000_l_params_pvalue.csv
+	-rm stats/rwset1000_l_aic.csv
 
-data/rwset500_l*.csv: data/rwset500_l.hdf5
+stats/rwset1000_l*.csv: data/rwset1000_l.hdf5
 	python $(BINPATH)/extract.py \
-		--hdf data/rwset500_l.hdf5 \
+		--hdf data/rwset1000_l.hdf5 \
 		--names \
-		 data/rwset500_l_fvalue.csv \
-		 data/rwset500_l_pvalue.csv \
-		 data/rwset500_l_omni_fvalue.csv \
-		 data/rwset500_l_params_tvalue.csv \
-		 data/rwset500_l_params_pvalue.csv \
-		 data/rwset500_l_aic.csv \
+		 stats/rwset1000_l_fvalue.csv \
+		 stats/rwset1000_l_pvalue.csv \
+		 stats/rwset1000_l_omni_fvalue.csv \
+		 stats/rwset1000_l_params_tvalue.csv \
+		 stats/rwset1000_l_params_pvalue.csv \
+		 stats/rwset1000_l_aic.csv \
 		--paths \
 		 /*/*/tests/fvalue \
 		 /*/*/tests/pvalue \
@@ -67,24 +51,24 @@ data/rwset500_l*.csv: data/rwset500_l.hdf5
 		 0
 
 # random
-clean_rwset500_r:
-	-rm data/rwset500_r_fvalue.csv 
-	-rm data/rwset500_r_pvalue.csv 
-	-rm data/rwset500_r_omni_fvalue.csv 
-	-rm data/rwset500_r_params_tvalue.csv 
-	-rm data/rwset500_r_params_pvalue.csv 
-	-rm data/rwset500_r_aic.csv 
+remove_rwset1000_r:
+	-rm stats/rwset1000_r_fvalue.csv 
+	-rm stats/rwset1000_r_pvalue.csv 
+	-rm stats/rwset1000_r_omni_fvalue.csv 
+	-rm stats/rwset1000_r_params_tvalue.csv 
+	-rm stats/rwset1000_r_params_pvalue.csv 
+	-rm stats/rwset1000_r_aic.csv 
 		
-data/rwset500_r*.csv: data/rwset500_r.hdf5
+stats/rwset1000_r*.csv: data/rwset1000_r.hdf5
 	python $(BINPATH)/extract.py \
-		--hdf data/rwset500_r.hdf5 \
+		--hdf data/rwset1000_r.hdf5 \
 		--names \
-		 data/rwset500_r_fvalue.csv \
-		 data/rwset500_r_pvalue.csv \
-		 data/rwset500_r_omni_fvalue.csv \
-		 data/rwset500_r_params_tvalue.csv \
-		 data/rwset500_r_params_pvalue.csv \
-		 data/rwset500_r_aic.csv \
+		 stats/rwset1000_r_fvalue.csv \
+		 stats/rwset1000_r_pvalue.csv \
+		 stats/rwset1000_r_omni_fvalue.csv \
+		 stats/rwset1000_r_params_tvalue.csv \
+		 stats/rwset1000_r_params_pvalue.csv \
+		 stats/rwset1000_r_aic.csv \
 		--paths \
 		 /*/*/tests/fvalue \
 		 /*/*/tests/pvalue \
@@ -103,24 +87,33 @@ data/rwset500_r*.csv: data/rwset500_r.hdf5
 # -----------
 # conjunction
 # -----------
-clean_conjuction: 
-	-rm data/rwset500_l_params_tvalue_conj.csv
-	-rm data/rwset500_r_params_tvalue_conj.csv
+remove_conjuction: 
+	-rm stats/rwset1000_l_params_tvalue_conj.csv
+	-rm stats/rwset1000_r_params_tvalue_conj.csv
 	
-conjunction: data/rwset500_l_params_tvalue_conj.csv data/rwset500_r_params_tvalue_conj.csv
+conjunction: stats/rwset1000_l_params_tvalue_conj.csv stats/rwset1000_r_params_tvalue_conj.csv
 	
 	
-data/rwset500_l_params_tvalue_conj.csv: data/rwset500_l_params_tvalue.csv data/rwset500_l_params_pvalue.csv
+stats/rwset1000_l_params_tvalue_conj.csv: stats/rwset1000_l_params_tvalue.csv stats/rwset1000_l_params_pvalue.csv
 	python $(BINPATH)/conjunction.py \
-		data/rwset500_l_params_tvalue_conj.csv \
-		data/rwset500_l_params_tvalue.csv \
-		data/rwset500_l_params_pvalue.csv \
+		stats/rwset1000_l_params_tvalue_conj.csv \
+		stats/rwset1000_l_params_tvalue.csv \
+		stats/rwset1000_l_params_pvalue.csv \
 		--drop 0
 
-data/rwset500_r_params_tvalue_conj.csv: data/rwset500_r_params_tvalue.csv data/rwset500_r_params_pvalue.csv
+stats/rwset1000_r_params_tvalue_conj.csv: stats/rwset1000_r_params_tvalue.csv stats/rwset1000_r_params_pvalue.csv
 	python $(BINPATH)/conjunction.py \
-		data/rwset500_r_params_tvalue_conj.csv \
-		data/rwset500_r_params_tvalue.csv \
-		data/rwset500_r_params_pvalue.csv \
+		stats/rwset1000_r_params_tvalue_conj.csv \
+		stats/rwset1000_r_params_tvalue.csv \
+		stats/rwset1000_r_params_pvalue.csv \
 		--drop 0
 
+
+
+# Quick test
+stats/rwset10_*.csv: data/rwset10.hdf5
+	python $(BINPATH)/extract.py \
+		--hdf data/rwset10.hdf5 \
+		--names stats/rwset10_fvalue.csv stats/rwset10_pvalue.csv \
+		--paths /*/*/tests/fvalue /*/*/tests/pvalue \
+		--dims 0 0

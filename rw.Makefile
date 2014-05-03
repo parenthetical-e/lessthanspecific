@@ -36,6 +36,10 @@ data/rwfit50_r_beh.hdf5: models.ini
 # --------------------
 # 500 iter run, fit
 # --------------------
+remove_rwfitBothShort: 
+	-rm data/rwfit500_l.hdf5
+	-rm data/rwfit500_r.hdf5	
+
 rwfitBothShort: data/rwfit500_l.hdf5 data/rwfit500_r.hdf5	
 
 data/rwfit500_l.hdf5: moremodels.ini
@@ -53,50 +57,36 @@ data/rwfit500_r.hdf5: moremodels.ini
 		--models moremodels.ini 
 
 # --------------------
-# 500 iter run, set
+# 1000 iter run, fit
 # --------------------
-rwsetBothShort: data/rwset500_l.hdf5 data/rwset500_r.hdf5	
+remove_rwfitBoth: 
+	-rm data/rwfit1000_l.hdf5
+	-rm data/rwfit1000_r.hdf5	
 
-data/rwset500_l.hdf5: moremodels.ini
-	python rwset.py data/rwset500_l.hdf5 \
-		500 \
-		--n_trials 60 \
-		--behave learn \
-		--alpha 0.1 0.3 0.5 0.7 0.9 \
-		--models moremodels.ini 
+rwfitBoth: data/rwfit1000_l.hdf5 data/rwfit1000_r.hdf5	
 
-data/rwset500_r.hdf5: moremodels.ini
-	python rwset.py data/rwset500_r.hdf5 \
-		500 \
-		--n_trials 60 \
-		--behave random \
-		--alpha 0.1 0.3 0.5 0.7 0.9 \
-		--models moremodels.ini 
-
-
-# --------------------
-# 2500 iter run, fit
-# --------------------
-rwfitBoth: data/rwfit2500_l.hdf5 data/rwfit2500_r.hdf5	
-
-data/rwfit2500_l.hdf5: moremodels.ini
-	python rwfit.py data/rwfit2500_l.hdf5 \
-		2500 \
+data/rwfit1000_l.hdf5: moremodels.ini
+	python rwfit.py data/rwfit1000_l.hdf5 \
+		1000 \
 		--n_trials 60 \
 		--behave learn \
 		--models moremodels.ini 
 
-data/rwfit2500_r.hdf5: moremodels.ini
-	python rwfit.py data/rwfit2500_r.hdf5 \
-		2500 \
+data/rwfit1000_r.hdf5: moremodels.ini
+	python rwfit.py data/rwfit1000_r.hdf5 \
+		1000 \
 		--n_trials 60 \
 		--behave random \
 		--models moremodels.ini 
+
 
 		
-# --------------------
-# 2500 iter run, set
-# --------------------
+# ---
+# SET
+# ---
+remove_test:
+	-rm data/rwset50_l.hdf5
+
 test_set: data/rwset50_l.hdf5
 	
 data/rwset50_l.hdf5: setmodels.ini
@@ -107,26 +97,14 @@ data/rwset50_l.hdf5: setmodels.ini
 		--alpha 0.1 0.3 0.5 0.7 0.9 \
 		--models setmodels.ini 
 
+# --------------------
+# 500 iter run, set
+# --------------------
+remove_rwsetBothShort:
+	-rm data/rwset500_l.hdf5 
+	-rm data/rwset500_r.hdf5
 
-rwsetBoth: data/rwset2500_l.hdf5 data/rwset2500_r.hdf5	
-
-data/rwset2500_l.hdf5: setmodels.ini
-	python rwset.py data/rwset2500_l.hdf5 \
-		2500 \
-		--n_trials 60 \
-		--behave learn \
-		--alpha 0.1 0.3 0.5 0.7 0.9 \
-		--models setmodels.ini 
-
-data/rwset2500_r.hdf5: setmodels.ini
-	python rwset.py data/rwset2500_r.hdf5 \
-		2500 \
-		--n_trials 60 \
-		--behave random \
-		--alpha 0.1 0.3 0.5 0.7 0.9 \
-		--models setmodels.ini 
-
-rwsetBothShort: data/rwset500_l.hdf5
+rwsetBothShort: data/rwset500_l.hdf5 data/rwset500_r.hdf5	
 
 data/rwset500_l.hdf5: setmodels.ini
 	python rwset.py data/rwset500_l.hdf5 \
@@ -136,10 +114,33 @@ data/rwset500_l.hdf5: setmodels.ini
 		--alpha 0.1 0.3 0.5 0.7 0.9 \
 		--models setmodels.ini 
 
-# data/rwset500_r.hdf5: setmodels.ini
-# 	python rwset.py data/rwset500_r.hdf5 \
-# 		500 \
-# 		--n_trials 60 \
-# 		--behave random \
-# 		--alpha 0.1 0.3 0.5 0.7 0.9 \
-# 		--models setmodels.ini 
+data/rwset500_r.hdf5: setmodels.ini
+	python rwset.py data/rwset500_r.hdf5 \
+		500 \
+		--n_trials 60 \
+		--behave random \
+		--alpha 0.1 0.3 0.5 0.7 0.9 \
+		--models setmodels.ini 
+
+remove_rwsetBoth:
+	-rm data/rwset1000_l.hdf5 
+	-rm data/rwset1000_r.hdf5
+
+rwsetBoth: data/rwset1000_l.hdf5 data/rwset1000_r.hdf5	
+
+data/rwset1000_l.hdf5: setmodels.ini
+	python rwset.py data/rwset1000_l.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave learn \
+		--alpha 0.1 0.3 0.5 0.7 0.9 \
+		--models setmodels.ini 
+
+data/rwset1000_r.hdf5: setmodels.ini
+	python rwset.py data/rwset1000_r.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave random \
+		--alpha 0.1 0.3 0.5 0.7 0.9 \
+		--models setmodels.ini 
+
