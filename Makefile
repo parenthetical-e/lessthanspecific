@@ -3,22 +3,22 @@
 # 1000 iterations	
 remove_rwfit:
 	$(MAKE) -f rw.Makefile remove_rwfitBoth
-	$(MAKE) -f stat.rwfit.Makefile remove
+	$(MAKE) -f stats.rwfit.Makefile remove
 	
 rwfit:
 	$(MAKE) -f rw.Makefile rwfitBoth
-	$(MAKE) -f stat.rwfit.Makefile all
+	$(MAKE) -f stats.rwfit.Makefile all
 
 # ----------------------------------------------------------------------------
-# SET sims, 
+# SET sims
 # 1000 iterations	
 remove_rwset:
 	$(MAKE) -f rw.Makefile remove_rwsetBoth
-	$(MAKE) -f stat.rwset.Makefile remove
+	$(MAKE) -f stats.rwset.Makefile remove
 
 rwset:
 	$(MAKE) -f rw.Makefile rwsetBoth
-	$(MAKE) -f stat.rwset.Makefile all
+	$(MAKE) -f stats.rwset.Makefile all
 
 # ----------------------------------------------------------------------------
 # MISC
