@@ -33,5 +33,5 @@ behave:
 remove_reinforce:
 	$(MAKE) -f reinforce.Makefile remove
 	
-remove:
+reinforce:
 	$(MAKE) -f reinforce.Makefile all
