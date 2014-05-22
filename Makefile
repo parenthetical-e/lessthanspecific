@@ -15,7 +15,7 @@ preflight:
 	-mkdir analysis/figs
 	
 # ----------------------------------------------------------------------------
-# FIT sims
+# Confusion experiment
 # 1000 iterations	
 remove_rwfit:
 	$(MAKE) -f rw.Makefile remove_rwfitBoth
@@ -26,7 +26,7 @@ rwfit:
 	$(MAKE) -f stats.rwfit.Makefile all
 
 # ----------------------------------------------------------------------------
-# SET sims
+# Seperatation experiment
 # 1000 iterations	
 remove_rwset:
 	$(MAKE) -f rw.Makefile remove_rwsetBoth
@@ -37,8 +37,8 @@ rwset:
 	$(MAKE) -f stats.rwset.Makefile all
 
 # ----------------------------------------------------------------------------
-# MISC
-# Save behave and RL data
+# MISC:
+# Create and save behave and RL data
 remove_behave:
 	$(MAKE) -f behave.Makefile remove
 
