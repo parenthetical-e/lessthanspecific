@@ -13,8 +13,6 @@ source('figs.R')
 Figure 0
 --------
 
-Randomly selected examples of simulated reinforcement learning, including expected _value_, the reward prediction error _rpe_, along with the probabiity of receiving a reward, _p_. The top panel features examples from the maximum liklihood fitting procedure. The bottom two panels demonstrate show how _rpe_ (middle) and _value_ (bottom) learning changes are a function of the learning rate. Each column in the bottom two panels matches a value of alpha, ranging from 0.1 to 0.9 in 0.2 steps. All example data is from the _learn_ behavoiral models.  _Random_ timecourse showed similar overall behavoir, without the consistent upward (or downward) trend indicative of learning.
-
 
 ```{r f0, eval=FALSE}
 # Get data, fit then 
@@ -180,14 +178,10 @@ dev.off()
 Figure 1
 --------
 
-Distribution of *t*-values for all _confusion_ experiments, which examined the precision of model-based fMRI between related, but theoretically distinct, trial-level predictors. The five predictors were acc (red), p (yellow), rand (green), rpe (blue), and value (violet). In the left facet column is _random_ behavoir models, on the right is the _learn_ing behavoir.  Each row is repeat of the same 5 predictors (fill colors) for a differnt BOLD signal (see row labels on the right).  That is, each predictor (with noise added) took a turn as the BOLD signal.  Panel **A** represents the model only approach while **B** represents the box and model approach - the recommended procedure for model-based fMRI (TOD).
-
-Probability density estimates of conjunction *t*-statistics for _confusion_ simulations.  Significance thresholds at both `p < 0.05` and `p < 0.0001` are shown in orange and red, respectivily,
+and 
 
 Figure 2
 --------
-
-Percent significance  ...
 
 ```{r f1andf2, eval=TRUE, cache=FALSE}
 # Fetch data, learn and random sets
@@ -289,9 +283,6 @@ dev.off()
 Figure 3
 -------
 
-The 'parameter selection' simulations. _Top_: probability density estimates for all possible of BOLD and model-based predictor sets. _Bottom_: Percent significant at both `p < 0.05` and `p < 0.0001` levels (in orange and red, respectivily).
-
-
 ```{r f3, eval=FALSE}
 # Get data and give cols better names
 set <- read.table('../stats/rwset1000_l_params_tvalue_conj.csv',sep=",",header=TRUE)
@@ -356,8 +347,6 @@ dev.off()
 
 Figure 4
 --------
-
-Comparison of RL data before and after HRF convolution.
 
 ```{r fig4, eval=FALSE}
 # Get the data, add an exp code for faceting, and reshape
