@@ -1,6 +1,6 @@
 # Usage.
 # To (re)run all experiments and analyses use `make all`
-# To remake all the plots just use `make analysis`.  Though if you are playing with analysis it would may easier to open analysis/fig.Rmd in Rstudio (https://www.rstudio.com) and go from there
+# To remake all the plots just use `make analysis`.  Though if you are playing with analysis it may be easier to open analysis/fig.Rmd in Rstudio (https://www.rstudio.com) and go from there
 
 
 all: preflight remove rwfit rwset behave reinforce analysis
