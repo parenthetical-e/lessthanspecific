@@ -1,0 +1,120 @@
+```{r init, echo=FALSE, warning=FALSE}
+require(ggplot2)
+require(plyr)
+require(Hmisc)
+
+source('meta.R')
+```
+
+```{r learn, cache=TRUE, echo=FALSE}
+fval_l <- read.table('../data/rwfit500_l_fvalue.csv',sep=",",header=TRUE)
+pval_l <- read.table('../data/rwfit500_l_pvalue.csv',sep=",",header=TRUE)
+
+fval_l <- cbind(fval_l$fvalue, seperate_meta(as.character(fval_l$path)))
+pval_l <- cbind(pval_l$pvalue, seperate_meta(as.character(pval_l$path)))
+
+f_l = join(fval_l, pval_l, by=c('iter', 'bold', 'model', 'design'))
+colnames(f_l) <- c("f", "iter", "bold", "model", "design", "p")
+
+sig <- NULL
+crit <- 0.001
+for(pval in f_l$p){
+  if(pval <= crit){
+    sig <- c(sig, 1)
+  } else {
+    sig <- c(sig, 0)
+  }
+}
+f_l$sig <- as.factor(sig)
+str(f_l)
+
+# M: 
+# 0.05 = 3.64915873
+# 0.001 = 10.064
+# 0.0001 = 15.91707371
+# 0.00001 = 20.33781939
+# 0.000001 = ~25.1
+
+# OBM
+# 0.05 = 2.88987636
+# 0.001 = 6.54144115
+# 0.0001 = 9.04011307
+# 0.00001 = 12
+# 0.000001 = 15
+p <- ggplot(data=f_l[f_l$design == "M",], aes(x=f, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    coord_cartesian(xlim = c(0.01,1000), ylim=c(0.01,8)) + 
+    scale_x_log10(breaks=c(0.01,10,100), labels=c(0,10,100)) + 
+    geom_vline(xintercept = 10.1, color="grey") + 
+    xlab("log_10(F)") +
+    ylab("Density (AU)") +
+    ggtitle("M") +
+    theme_bw(); print(p)
+
+p <- ggplot(data=f_l[f_l$design == "OBM",], aes(x=f, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    coord_cartesian(xlim = c(0.01,1000), ylim=c(0.01,8)) + 
+    scale_x_log10(breaks=c(0.01,10,100), labels=c(0,10,100)) + 
+    geom_vline(xintercept = 6.5, color="grey") + 
+    xlab("log_10(F)") +
+    ylab("Density (AU)") +
+    ggtitle("OBM") +
+    theme_bw(); print(p)
+```
+
+
+```{r random, cache=TRUE, echo=FALSE}
+fval_r <- read.table('../data/rwfit500_r_fvalue.csv',sep=",",header=TRUE)
+pval_r <- read.table('../data/rwfit500_r_pvalue.csv',sep=",",header=TRUE)
+
+fval_r <- cbind(fval_r$fvalue, seperate_meta(as.character(fval_r$path)))
+pval_r <- cbind(pval_r$pvalue, seperate_meta(as.character(pval_r$path)))
+
+f_r = join(fval_r, pval_r, by=c('iter', 'bold', 'model', 'design'))
+colnames(f_r) <- c("f", "iter", "bold", "model", "design", "p")
+
+sig <- NULL
+crit <- 0.001
+for(pval in f_r$p){
+  if(pval <= crit){
+    sig <- c(sig, 1)
+  } else {
+    sig <- c(sig, 0)
+  }
+}
+f_r$sig <- as.factor(sig)
+str(f_r)
+
+# M: 
+# 0.05 = 3.64915873
+# 0.001 = 10.064
+# 0.0001 = 15.91707371
+# 0.00001 = 20.33781939
+# 0.000001 = ~25.1
+
+# OBM
+# 0.05 = 2.88987636
+# 0.001 = 6.54144115
+# 0.0001 = 9.04011307
+# 0.00001 = 12
+# 0.000001 = 15
+p <- ggplot(data=f_r[f_r$design == "M",], aes(x=f, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    coord_cartesian(xlim = c(0.01,1000), ylim=c(0.01,8)) + 
+    scale_x_log10(breaks=c(0.01,10,100), labels=c(0,10,100)) + 
+    geom_vline(xintercept = 10.1, color="grey") + 
+    xlab("log_10(F)") +
+    ylab("Density (AU)") +
+    ggtitle("M") +
+    theme_bw(); print(p)
+
+p <- ggplot(data=f_r[f_r$design == "OBM",], aes(x=f, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    coord_cartesian(xlim = c(0.01,1000), ylim=c(0.01,8)) + 
+    scale_x_log10(breaks=c(0.01,10,100), labels=c(0,10,100)) + 
+    geom_vline(xintercept = 6.5, color="grey") + 
+    xlab("log_10(F)") +
+    ylab("Density (AU)") +
+    ggtitle("OBM") +
+    theme_bw(); print(p)
+```

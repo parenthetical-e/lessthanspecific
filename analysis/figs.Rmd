@@ -1,0 +1,409 @@
+```{r init, message=FALSE}
+require(ggplot2)
+require(plyr)
+require(Hmisc)
+require(reshape)
+require(grid)
+
+source('meta.R')
+source('multiplot.R')
+source('figs.R')
+```
+
+Figure 0
+--------
+
+Randomly selected examples of simulated reinforcement learning, including expected _value_, the reward prediction error _rpe_, along with the probabiity of receiving a reward, _p_. The top panel features examples from the maximum liklihood fitting procedure. The bottom two panels demonstrate show how _rpe_ (middle) and _value_ (bottom) learning changes are a function of the learning rate. Each column in the bottom two panels matches a value of alpha, ranging from 0.1 to 0.9 in 0.2 steps. All example data is from the _learn_ behavoiral models.  _Random_ timecourse showed similar overall behavoir, without the consistent upward (or downward) trend indicative of learning.
+
+
+```{r f0, eval=FALSE}
+# Get data, fit then 
+# gather set together.
+
+numtraces <- 5
+
+b.fit <- read.table('../data/behave_rwfit100_l.csv', sep=',', header=TRUE)
+b.fit.r <- read.table('../data/behave_rwfit100_r.csv', sep=',', header=TRUE)
+
+alphas <- c('01', '03', '05', '07', '09')
+b.set <- NULL
+for(alpha in alphas){
+  df <- read.table(paste(
+    '../data/behave_rwset100_l_', alpha, '.csv', sep=""), 
+    sep=',', header=TRUE)
+  df$alpha <- as.factor(rep(alpha, nrow(df)))
+  b.set <- rbind(b.set, df)
+}
+
+str(b.fit)
+str(b.fit.r)
+str(b.set)
+
+# Reshape for ggplot2
+b.fit <- melt(b.fit, id=c("count","index"))
+colnames(b.fit) <- c("iter", "index", "variable", "value")
+
+b.fit.r <- melt(b.fit.r, id=c("count","index"))
+colnames(b.fit.r) <- c("iter", "index", "variable", "value")
+
+b.set <- melt(b.set, id=c("alpha", "count", "index"))
+colnames(b.set) <- c("alpha", "iter", "index", "variable", "value")
+
+str(b.fit)
+str(b.fit.r)
+str(b.set)
+
+# Fit
+# Make a big matrix of time courses
+# Rows are repeats, cols are kinds
+toplot <- (b.fit$variable=="rpe") | (b.fit$variable=="value") | (b.fit$variable=="p") | (b.fit$variable=="acc")
+
+# rename facets
+b.fit$variable <- revalue(b.fit$variable, c("rpe"="RPE", "p"="Pr"))
+
+toplot <- toplot & (b.fit$iter < numtraces)
+f0.p1 <- ggplot(droplevels(b.fit[toplot,]), aes(x=index, y=value)) +
+  geom_line() +
+  facet_grid(iter~variable) +
+  xlab("") + ylab("") + ggtitle("A") + 
+  theme(
+      legend.key.size = unit(.3, "cm"),
+      #legend.position = lp,
+      plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),  ## Major grid lines
+      panel.grid.minor = element_blank(),  ## Minor grid lines
+      panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),  ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      panel.margin = unit(1.7, "lines"),
+      axis.text.y=element_blank(),       ## y lab
+      axis.ticks.y=element_blank(),      ## y ticks
+      strip.text.y = element_blank(),
+      #strip.text.y = element_text(angle=0),## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+print(f0.p1)
+
+# random
+toplot <- (b.fit.r$variable=="rpe") | (b.fit.r$variable=="value") | (b.fit.r$variable=="p") | (b.fit.r$variable=="acc")
+
+# rename facets
+b.fit.r$variable <- revalue(b.fit.r$variable, c("rpe"="RPE", "p"="Pr"))
+
+toplot <- toplot & (b.fit.r$iter < numtraces)
+f0.p1b <- ggplot(droplevels(b.fit.r[toplot,]), aes(x=index, y=value)) +
+  geom_line() +
+  facet_grid(iter~variable) +
+  xlab("") + ylab("") + ggtitle("B") + 
+  theme(
+      legend.key.size = unit(.3, "cm"),
+      #legend.position = lp,
+      plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),  ## Major grid lines
+      panel.grid.minor = element_blank(),  ## Minor grid lines
+      panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),  ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      panel.margin = unit(1.7, "lines"),
+      axis.text.y=element_blank(),       ## y lab
+      axis.ticks.y=element_blank(),      ## y ticks
+      strip.text.y = element_blank(),
+      #strip.text.y = element_text(angle=0),## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+print(f0.p1b)
+
+# Set
+# This matrix is for rpe only,
+# cols are alphas
+
+# rename facets
+b.set$variable <- revalue(b.set$variable, c("rpe"="RPE", "p"="Pr"))
+b.set$alpha <- revalue(b.set$alpha, c("01"="0.1", "03"="0.3", "05"="0.5", "07"="0.7", "09"="0.9"))
+
+toplot <- (b.set$variable=="RPE")
+toplot <- toplot & (b.set$iter < numtraces)
+f0.p2 <- ggplot(droplevels(b.set[toplot,]), aes(x=index, y=value)) +
+  geom_line() +
+  facet_grid(iter~alpha) +
+  xlab("") + ylab("") + ggtitle("C") + 
+  theme(
+      #legend.key.size = unit(.3, "cm"),
+      #legend.position = lp,
+      plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),  ## Major grid lines
+      panel.grid.minor = element_blank(),  ## Minor grid lines
+      panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),  ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      axis.text.y=element_blank(),       ## y lab
+      axis.ticks.y=element_blank(),      ## y ticks
+      strip.text.y = element_blank(),
+      #strip.text.y = element_text(angle=0),## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+print(f0.p2)
+
+# This matrix is for value only,
+# cols are alphas
+toplot <- (b.set$variable=="value")
+toplot <- toplot & (b.set$iter < numtraces)
+f0.p3 <- ggplot(droplevels(b.set[toplot,]), aes(x=index, y=value)) +
+  geom_line() +
+  facet_grid(iter~alpha) +
+  xlab("Trial") + ylab("") + ggtitle("D") + 
+  theme(
+      #legend.key.size = unit(.3, "cm"),
+      #legend.position = lp,
+      plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),  ## Major grid lines
+      panel.grid.minor = element_blank(),  ## Minor grid lines
+      panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),  ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      axis.text.y=element_blank(),       ## y lab
+      axis.ticks.y=element_blank(),      ## y ticks  
+      strip.text.y = element_blank(),
+      #strip.text.y = element_text(angle=0),## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+print(f0.p3)
+
+# Combine them into one pdf, making the figure
+pdf("figs/f0_behave.pdf", width=6, height=9)
+multiplot(f0.p1, f0.p1b, f0.p2, f0.p3, cols=1)
+dev.off()
+```
+
+Figure 1
+--------
+
+Distribution of *t*-values for all _confusion_ experiments, which examined the precision of model-based fMRI between related, but theoretically distinct, trial-level predictors. The five predictors were acc (red), p (yellow), rand (green), rpe (blue), and value (violet). In the left facet column is _random_ behavoir models, on the right is the _learn_ing behavoir.  Each row is repeat of the same 5 predictors (fill colors) for a differnt BOLD signal (see row labels on the right).  That is, each predictor (with noise added) took a turn as the BOLD signal.  Panel **A** represents the model only approach while **B** represents the box and model approach - the recommended procedure for model-based fMRI (TOD).
+
+Probability density estimates of conjunction *t*-statistics for _confusion_ simulations.  Significance thresholds at both `p < 0.05` and `p < 0.0001` are shown in orange and red, respectivily,
+
+Figure 2
+--------
+
+Percent significance  ...
+
+```{r f1andf2, eval=TRUE, cache=FALSE}
+# Fetch data, learn and random sets
+learn <- read.table('../stats/rwfit1000_l_params_tvalue_conj.csv',sep=",",header=TRUE)
+learn <- cbind(learn$value, learn$p, seperate_meta(as.character(learn$path)))
+colnames(learn) <- c("t","p", "iter", "bold", "model", "design")
+learn <- droplevels(learn[learn$bold != 'box',])
+learn$exp <- rep("learn", nrow(learn))
+
+random <- read.table('../stats/rwfit1000_r_params_tvalue_conj.csv',sep=",",header=TRUE)
+random <- cbind(random$value, random$p, seperate_meta(as.character(random$path)))
+colnames(random) <- c("t","p", "iter", "bold", "model", "design")
+random <- droplevels(random[random$bold != 'box',])
+random$exp <- rep("guess", nrow(random))
+
+# Join the sets
+both <- rbind(learn, random)
+levels(both$model) <- c("acc", "box_acc", "box_p", "box_rand", 
+                        "box_rpe", "box_value", "p", "rand", 
+                        "rpe", "value")
+
+# Create and join sig
+learnsig <- f1.f2.sigfac(learn)
+learnsig$exp <- rep("learn", nrow(learnsig))
+randomsig <- f1.f2.sigfac(random)
+randomsig$exp <- rep("guess", nrow(randomsig))
+
+bothsig <- rbind(learnsig, randomsig)
+bothsig$mean <- bothsig$mean*100  ## Make into percent
+levels(bothsig$model) <- c("acc", "box_acc", "box_p", "box_rand", 
+                           "box_rpe", "box_value", "p", "rand", 
+                           "rpe", "value")
+
+# Get mean frac sig, dropping bold/mode match
+dropmatch <- NULL
+for(i in nrow(bothsig)) {
+  m <- grep(bothsig$bold[i], grep(bothsig$model[i]))
+  if(m > 0){
+    dropmatch <- c(dropmatch, TRUE)
+  } else {
+    dropmatch <- c(dropmatch, FALSE)
+  }
+  print(dropmatch)
+  print(mean(bothsig$mean[dropmatch]))
+}
+
+
+# Rename things
+both$bold <- revalue(both$bold, c("rpe"="RPE", "p"="Pr"))
+both$model <- revalue(both$model, c("box_acc"="acc", "box_rpe"="RPE",
+                                    "box_value"="value", "box_p"="Pr",
+                                    "box_rand"="rand", 
+                                    "rpe"="RPE", "p"="Pr"))
+both$bold <- factor(both$bold, levels=c("acc", "Pr", "RPE", "value", "rand"))
+both$model <- factor(both$model, levels=c("acc", "Pr", "RPE", "value", "rand"))
+
+# sig counts
+bothsig$bold <- revalue(bothsig$bold, c("rpe"="RPE", "p"="Pr"))
+bothsig$model <- revalue(bothsig$model, c("box_acc"="acc", "box_rpe"="RPE",
+                                    "box_value"="value", "box_p"="Pr",
+                                    "box_rand"="rand", 
+                                    "rpe"="RPE", "p"="Pr"))
+bothsig$bold <- factor(bothsig$bold, levels=c("acc", "Pr", "RPE", "value", "rand"))
+bothsig$model <- factor(bothsig$model, levels=c("acc", "Pr", "RPE", "value", "rand"))
+
+# Fig 1
+f1.p1 <- f1.f2.pdist(both[both$design == "Model",], "bottom") + ggtitle("A")
+f1.p2 <- f1.f2.sigpoints(bothsig[bothsig$design == "Model",]) + ggtitle("A")
+print(f1.p1)
+print(f1.p2)
+
+# pdf(file="figs/model.pdf", width=5, height=8.5)
+# multiplot(f1.p1, f1.p2, cols=1)
+# dev.off()
+
+# Fig 2
+f2.p1 <- f1.f2.pdist(both[both$design == "Box_and_model",], "bottom") + ggtitle("B")
+f2.p2 <- f1.f2.sigpoints(bothsig[bothsig$design == "Box_and_model",]) + ggtitle("B")
+print(f2.p1)
+print(f2.p2)
+
+# pdf(file="figs/box_and_model.pdf", width=5, height=8.5)
+# multiplot(f2.p1, f2.p2, cols=1)
+# dev.off()
+# 
+# pdf(file="figs/all_set.pdf", width=8, height=8.5)
+# multiplot(f1.p1, f1.p2, f2.p1, f2.p2, cols=2)
+# dev.off()
+
+pdf(file="figs/f1_p1.pdf", width=5, height=9)
+multiplot(f1.p1, f2.p1, cols=1)
+dev.off()
+
+pdf(file="figs/f2_p2.pdf", width=5, height=9)
+multiplot(f1.p2, f2.p2, cols=1)
+dev.off()
+```
+    
+Figure 3
+-------
+
+The 'parameter selection' simulations. _Top_: probability density estimates for all possible of BOLD and model-based predictor sets. _Bottom_: Percent significant at both `p < 0.05` and `p < 0.0001` levels (in orange and red, respectivily).
+
+
+```{r f3, eval=FALSE}
+# Get data and give cols better names
+set <- read.table('../stats/rwset1000_l_params_tvalue_conj.csv',sep=",",header=TRUE)
+set <- cbind(set$value, set$p, seperate_meta_set(as.character(set$path)))
+colnames(set)
+colnames(set) <- c("t", "p", "iter", "bold", "bold_alpha", "model", "model_alpha", "design")
+str(set)
+
+# Select data
+set <- droplevels(set[set$bold != 'Model',])
+str(set)
+
+# --
+# Figure 3 p1 and 2, density
+tmps.r <- set[set$bold == 'rpe',]
+tmps.r <- tmps.r[grep('rpe', tmps.r$model),]
+str(tmps.r)
+
+tmps.v <- set[set$bold == 'value',]
+tmps.v <- tmps.v[grep('value', tmps.v$model),]
+str(tmps.v)
+
+tmps.c <- droplevels(rbind(tmps.r, tmps.v))
+str(tmps.c)
+
+setsig <- f3.sigfac(tmps.c)
+setsig$mean <- setsig$mean * 100  ## into percent
+str(setsig)
+
+# Rename
+tmps.c$bold <- revalue(tmps.c$bold, c("rpe"="RPE"))
+setsig$bold <- revalue(setsig$bold, c("rpe"="RPE"))
+
+f3.p1 <- f3.pdist(tmps.c, "bottom") + ggtitle("A"); print(f3.p1) 
+f3.p2 <- f3.sigpoints(setsig) + ggtitle("B"); print(f3.p2)
+
+# Compose plots into the figure
+pdf(file="figs/f3_set.pdf", width=7.25, height=5.5)
+multiplot(f3.p1, f3.p2, cols=1)
+dev.off()
+
+# p1 rpe
+# tmps <- set[(set$bold == 'rpe'),]
+# tmps <- tmps[grep('rpe', tmps$model),]
+# str(tmps)
+# setsig.rpe <- f3.sigfac(tmps)
+# setsig.rpe$mean <- setsig.rpe$mean * 100  ## into percent
+# str(setsig.rpe)
+# 
+# f3.p1 <- f3.pdist(tmps, "right"); print(f3.p1)
+# f3.p3 <- f3.sigpoints(setsig.rpe); print(f3.p3)
+# 
+# # p2 value
+# tmps <- set[(set$bold == 'value'),]
+# tmps <- tmps[grep('value', tmps$model),]
+# setsig.val <- f3.sigfac(tmps)
+# setsig.val$mean <- setsig.val$mean * 100  ## into percent
+# 
+# f3.p2 <- f3.pdist(tmps, "right"); print(f3.p2)
+# f3.p4 <- f3.sigpoints(setsig.val); print(f3.p4)
+``` 
+
+Figure 4
+--------
+
+Comparison of RL data before and after HRF convolution.
+
+```{r fig4, eval=FALSE}
+# Get the data, add an exp code for faceting, and reshape
+nohrf <- read.table('../data/behave_rwfit100_l.csv',sep=",",header=TRUE)
+nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
+hrf <- read.table('../data/behave_rwfit100_l_hrf.csv',sep=",",header=TRUE)
+hrf$exp <- as.factor(rep("After HRF", nrow(hrf)))
+
+both <- rbind(nohrf, hrf)                         ## join hrf and nohrf
+both <- melt(both, id=c("count","index","exp"))   ## reshape
+str(both)
+print(unique(both$variable))
+
+# Filter for plotting
+both <- both[both$value != 0,]                    ## Drop null trials (numerically not ideal)
+mask <- (both$variable == "rpe") | (both$variable == "value") | (both$variable == "p") | (both$variable == "acc")
+
+# rename facets
+both$variable <- revalue(both$variable, c("rpe"="RPE", "p"="Pr"))
+
+# Plot
+f4.p1 <- ggplot(data=both[mask,], aes(x=value, fill=variable)) + 
+    geom_density(alpha=.4, color="black") + 
+    # Match colors in fig 1 and 2
+    scale_fill_manual(values=c("#F8766D", "#A3A500", "#00BF7D", "#00B0F6"),
+                      name = "Predictor") +
+    facet_grid(.~exp) + 
+    ylab("Density (AU)") +
+    xlab("y") +
+    theme_bw() +
+    #coord_cartesian(ylim=c(0,3)) +
+    theme(
+      legend.key.size = unit(.3, "cm"),
+      legend.position = "bottom",
+      #plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),  ## Major grid lines
+      panel.grid.minor = element_blank(),  ## Minor grid lines
+      #panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),   ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),       ## y lab
+      #axis.ticks.y=element_blank(),      ## y ticks  
+      strip.text.y = element_text(angle=0),## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+print(f4.p1)
+ggsave("figs/f4_hrf_effect.pdf", plot=f4.p1, width=4, height=2.5)
+```

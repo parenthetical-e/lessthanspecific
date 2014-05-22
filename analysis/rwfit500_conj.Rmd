@@ -1,0 +1,145 @@
+```{r init, echo=FALSE, warning=FALSE}
+require(ggplot2)
+require(plyr)
+require(Hmisc)
+
+source('meta.R')
+source('multiplot.R')
+```
+
+```{r learn, cache=FALSE, echo=FALSE}
+t_l <- read.table('../data/rwfit500_l_params_tvalue_conj.csv',sep=",",header=TRUE)
+t_l <- cbind(t_l$value, t_l$p, seperate_meta(as.character(t_l$path)))
+
+colnames(t_l) <- c("t","p", "iter", "bold", "model", "design")
+t_l <- droplevels(t_l[t_l$bold != 'box',])
+
+crit <- 0.05
+sig05 <- NULL
+for(pval in t_l$p){
+  if(pval <= crit){
+    sig05 <- c(sig05, 1)
+  } else {
+    sig05 <- c(sig05, 0)
+  }
+}
+
+crit <- 0.0001
+sig0001 <- NULL
+for(pval in t_l$p){
+  if(pval <= crit){
+    sig0001 <- c(sig0001, 1)
+  } else {
+    sig0001 <- c(sig0001, 0)
+  }
+}
+
+sig <- c(sig05, sig0001)
+sig_level <- c(rep('0.05', length(sig05)), rep('0.0001', length(sig0001)))
+meta <- rbind(t_l[,c("bold", "model", "design")], t_l[,c("bold", "model", "design")])
+sigdf <- data.frame("sig"=sig, "sig_level"=sig_level)
+sigdf <- cbind(sigdf, meta)
+str(sigdf)
+
+msig <- ddply(sigdf, .(design, model, bold, sig_level), function(x) (mean(x$sig)))
+str(msig)
+colnames(msig) <- c("design", "model", "bold", "sig_level", "mean")
+
+p1 <- ggplot(data=msig[msig$design == "Model",], 
+             aes(x=model, y=mean, color=sig_level)) + 
+    geom_point(size=2, alpha=.8)+
+    facet_grid(bold~.) + 
+    xlab("model") +
+    ylab("Fraction significant") +
+    theme_bw() + coord_flip() +
+    scale_color_manual(values=c("darkred", "darkorange2")) +
+    #geom_hline(yintercept = 0, color="grey") +  ## p =.0001
+      theme(
+        plot.background = element_blank(),   ## Main facet bkg
+        #panel.grid.major.x = element_blank(),  ## Major grid lines
+        panel.grid.minor = element_blank(),  ## Minor grid lines
+        #panel.border = element_blank(),      ## Facet border
+        panel.background = element_blank(),  ## Facet bkg
+        #panel.margin = unit(1.7, "lines"),
+        # axis.text.y=element_blank(),       ## y lab
+        #axis.ticks.y=element_blank(),      ## y ticks  
+        strip.text.y = element_text(angle=0),## facet name rotate
+        strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+      ); print(p1)
+ggsave("figs/fraction_model_l.pdf", width=3.9, height=4)
+
+
+p2 <- ggplot(data=t_l[t_l$design == "Model",], aes(x=t, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) +
+    geom_vline(xintercept = 1.9, color="darkorange2") +  ## p =.05
+    geom_vline(xintercept = 3.9, color="darkred") +  ## p =.0001
+    xlab("t-value") +
+    ylab("Density (AU)") +
+    #ggtitle("Model") +
+    theme_bw() +
+    theme(
+        #plot.background = element_blank(),   ## Main facet bkg
+        #panel.grid.major = element_blank(),  ## Major grid lines
+        #panel.grid.minor = element_blank(),  ## Minor grid lines
+        #panel.border = element_blank(),      ## Facet border
+        panel.background = element_blank(),  ## Facet bkg
+        #panel.margin = unit(1.7, "lines"),
+        #axis.text.y=element_blank(),       ## y lab
+        #axis.ticks.y=element_blank(),      ## y ticks  
+        strip.text.y = element_text(angle=0),## facet name rotate
+        strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+      ); print(p2)
+ggsave("figs/hist_model_l.pdf", width=3.9, height=4)
+
+pdf(file="figs/model_l.pdf", width=4, height=7)
+multiplot(p2, p1, cols=1)
+dev.off()
+
+p <- ggplot(data=t_l[t_l$design == "Box_and_model",], aes(x=t, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    geom_vline(xintercept = 3.9, color="grey") + 
+    xlab("t-value") +
+    ylab("Density (AU)") +
+    #ggtitle("Box_and_model") +
+    theme_bw(); print(p)
+ggsave("figs/hist_box_l.pdf")
+```
+
+
+```{r random, cache=TRUE, echo=FALSE}
+t_r <- read.table('../data/rwfit500_r_params_tvalue_conj.csv',sep=",",header=TRUE)
+t_r <- cbind(t_r$value, t_r$p, seperate_meta(as.character(t_r$path)))
+colnames(t_r) <- c("t","p", "iter", "bold", "model", "design")
+#str(t_r)
+
+
+sig <- NULL
+crit <- 0.001
+for(pval in t_r$p){
+  if(pval <= crit){
+    sig <- c(sig, 1)
+  } else {
+    sig <- c(sig, 0)
+  }
+}
+t_r$sig <- as.factor(sig)
+#str(t_r)
+
+p <- ggplot(data=t_r[t_r$design == "Model",], aes(x=t, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    geom_vline(xintercept = 3.9, color="grey") +  ## p =.0001
+    xlab("t-value") +
+    ylab("Density (AU)") +
+    #ggtitle("Model") +
+    theme_bw(); print(p)
+ggsave("figs/hist_model_r.pdf")
+
+p <- ggplot(data=t_r[t_r$design == "Box_and_model",], aes(x=t, fill=model)) + 
+    geom_density(alpha=.4, color="black") + facet_grid(bold~.) + 
+    geom_vline(xintercept = 3.9, color="grey") + 
+    xlab("t-value") +
+    ylab("Density (AU)") +
+    #ggtitle("Box_and_model") +
+    theme_bw(); print(p)
+ggsave("figs/hist_box_r.pdf")
+```
