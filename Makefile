@@ -26,7 +26,7 @@ rwfit:
 	$(MAKE) -f stats.rwfit.Makefile all
 
 # ----------------------------------------------------------------------------
-# Seperatation experiment
+# Separation experiment
 # 1000 iterations	
 remove_rwset:
 	$(MAKE) -f rw.Makefile remove_rwsetBoth
