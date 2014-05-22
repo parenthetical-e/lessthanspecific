@@ -1,7 +1,9 @@
 lessthanspecific
 ================
 
-Create and analyze the 'less than specific' data
+**The manuscript matching these routines is under review at Neuroimage.**
+
+Create and analyze the 'less than specific' data.
 
 See the Makefile for usage instructions.
 
