@@ -1,3 +1,17 @@
+# Usage.
+# To (re)run all experiments and analyses use `make all`
+# To remake all the plots just use `make analysis`.  Though if you are playing with analysis it would may easier to open analysis/fig.Rmd in Rstudio (https://www.rstudio.com) and go from there
+
+
+all: preflight remove rwfit rwset behave reinforce analysis
+
+remove: remove_rwfit remove_rwset remove_behave remove_reinforce
+
+preflight:
+	-mkdir data
+	-mkdir stats
+	-mkdir analysis/figs
+	
 # ----------------------------------------------------------------------------
 # FIT sims
 # 1000 iterations	
@@ -35,3 +49,6 @@ remove_reinforce:
 	
 reinforce:
 	$(MAKE) -f reinforce.Makefile all
+
+analysis:
+	Rscript -e "library(knitr); knit('analysis/figs.Rmd')"
