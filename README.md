@@ -1,7 +1,7 @@
 lessthanspecific
 ================
 
-**The manuscript matching these routines is under review at Neuroimage.**
+**The manuscript matching these routines is under review at Frontiers.**
 
 Create and analyze the 'less than specific' data.
 
