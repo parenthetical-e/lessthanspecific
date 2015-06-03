@@ -12,6 +12,9 @@ remove:
 
 all: behave50 behave50Hrf 
 
+# Seed was default for below, meaning the hrf and nohrf
+# samples match up.
+
 # No HRF
 behave50: data/behave50_l.csv data/behave50_r.csv
 	

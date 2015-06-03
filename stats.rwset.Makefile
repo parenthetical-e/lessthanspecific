@@ -84,6 +84,51 @@ stats/rwset1000_r*.csv: data/rwset1000_r.hdf5
 		 1 \
 		 0
 
+
+remove_rowset1000_ro:
+	-rm stats/rwset1000_ro_fvalue.csv 
+	-rm stats/rwset1000_ro_pvalue.csv 
+	-rm stats/rwset1000_ro_omni_fvalue.csv 
+	-rm stats/rwset1000_ro_params_tvalue.csv 
+	-rm stats/rwset1000_ro_params_pvalue.csv 
+	-rm stats/rwset1000_ro_aic.csv 
+		
+stats/rwset1000_ro*.csv: data/rwset1000_ro.hdf5
+	python $(BINPATH)/extract.py \
+		--hdf data/rwset1000_ro.hdf5 \
+		--names \
+		 stats/rwset1000_ro_fvalue.csv \
+		 stats/rwset1000_ro_pvalue.csv \
+		 stats/rwset1000_ro_omni_fvalue.csv \
+		 stats/rwset1000_ro_params_tvalue.csv \
+		 stats/rwset1000_ro_params_pvalue.csv \
+		 stats/rwset1000_ro_aic.csv \
+		--paths \
+		 /*/*/tests/fvalue \
+		 /*/*/tests/pvalue \
+		 /*/*/fvalue \
+		 /*/*/t \
+		 /*/*/p \
+		 /*/*/aic \
+		--dims \
+		 0 \
+		 0 \
+		 0 \
+		 1 \
+		 1 \
+		 0
+
+# ---------
+#  Get beta
+#  --------
+stats/rwset1000_ro_params_tvalue_parambeta.csv: stats/rwset1000_ro_params_tvalue.csv stats/rwset1000_ro_params_pvalue.csv
+	python $(BINPATH)/getbeta.py \
+		stats/rwset1000_ro_params_tvalue_parambeta.csv \
+		stats/rwset1000_ro_params_tvalue.csv \
+		stats/rwset1000_ro_params_pvalue.csv \
+		--col -1 \
+		--drop 0
+
 # -----------
 # conjunction
 # -----------

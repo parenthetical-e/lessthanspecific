@@ -108,6 +108,31 @@ stats/rwfit1000_r_params_tvalue_conj.csv: stats/rwfit1000_r_params_tvalue.csv st
 		stats/rwfit1000_r_params_pvalue.csv \
 		--drop 0
 
+# ----------------
+# get partial beta
+# ----------------
+remove_parambeta: 
+	-rm stats/rwfit1000_l_params_tvalue_parambeta.csv
+	-rm stats/rwfit1000_r_params_tvalue_parambeta.csv
+	
+parambeta: stats/rwfit1000_l_params_tvalue_parambeta.csv stats/rwfit1000_r_params_tvalue_parambeta.csv
+	
+	
+stats/rwfit1000_l_params_tvalue_parambeta.csv: stats/rwfit1000_l_params_tvalue.csv stats/rwfit1000_l_params_pvalue.csv
+	python $(BINPATH)/getbeta.py \
+		stats/rwfit1000_l_params_tvalue_parambeta.csv \
+		stats/rwfit1000_l_params_tvalue.csv \
+		stats/rwfit1000_l_params_pvalue.csv \
+		--col -1 \
+		--drop 0
+
+stats/rwfit1000_r_params_tvalue_parambeta.csv: stats/rwfit1000_r_params_tvalue.csv stats/rwfit1000_r_params_pvalue.csv
+	python $(BINPATH)/getbeta.py \
+		stats/rwfit1000_r_params_tvalue_parambeta.csv \
+		stats/rwfit1000_r_params_tvalue.csv \
+		stats/rwfit1000_r_params_pvalue.csv \
+		--col -1 \
+		--drop 0
 
 
 # Quick test
