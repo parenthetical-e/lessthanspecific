@@ -1,9 +1,10 @@
 ```{r init, message=FALSE}
-require(ggplot2)
-require(plyr)
-require(Hmisc)
-require(reshape)
-require(grid)
+library(ggplot2)
+library(plyr)
+library(Hmisc)
+library(reshape2)
+library(wq)
+library(grid)
 
 source('meta.R')
 source('multiplot.R')
@@ -63,7 +64,7 @@ toplot <- toplot & (b.fit$iter < numtraces)
 f0.p1 <- ggplot(droplevels(b.fit[toplot,]), aes(x=index, y=value)) +
   geom_line() +
   facet_grid(iter~variable) +
-  xlab("") + ylab("") + ggtitle("A") + 
+  xlab("") + ylab("") + ggtitle("A\nlearn") + 
   theme(
       legend.key.size = unit(.3, "cm"),
       #legend.position = lp,
@@ -92,7 +93,7 @@ toplot <- toplot & (b.fit.r$iter < numtraces)
 f0.p1b <- ggplot(droplevels(b.fit.r[toplot,]), aes(x=index, y=value)) +
   geom_line() +
   facet_grid(iter~variable) +
-  xlab("") + ylab("") + ggtitle("B") + 
+  xlab("") + ylab("") + ggtitle("B\nguess") + 
   theme(
       legend.key.size = unit(.3, "cm"),
       #legend.position = lp,
@@ -124,7 +125,7 @@ toplot <- toplot & (b.set$iter < numtraces)
 f0.p2 <- ggplot(droplevels(b.set[toplot,]), aes(x=index, y=value)) +
   geom_line() +
   facet_grid(iter~alpha) +
-  xlab("") + ylab("") + ggtitle("C") + 
+  xlab("") + ylab("") + ggtitle("C\nRPE") + 
   theme(
       #legend.key.size = unit(.3, "cm"),
       #legend.position = lp,
@@ -150,7 +151,7 @@ toplot <- toplot & (b.set$iter < numtraces)
 f0.p3 <- ggplot(droplevels(b.set[toplot,]), aes(x=index, y=value)) +
   geom_line() +
   facet_grid(iter~alpha) +
-  xlab("Trial") + ylab("") + ggtitle("D") + 
+  xlab("Trial") + ylab("") + ggtitle("D\nvalue") + 
   theme(
       #legend.key.size = unit(.3, "cm"),
       #legend.position = lp,
@@ -170,12 +171,12 @@ f0.p3 <- ggplot(droplevels(b.set[toplot,]), aes(x=index, y=value)) +
 print(f0.p3)
 
 # Combine them into one pdf, making the figure
-pdf("figs/f0_behave.pdf", width=6, height=9)
+pdf("figs/f0_behave.pdf", width=6, height=10)
 multiplot(f0.p1, f0.p1b, f0.p2, f0.p3, cols=1)
 dev.off()
 ```
 
-Figure 1
+Figure 1  
 --------
 
 and 
@@ -185,13 +186,13 @@ Figure 2
 
 ```{r f1andf2, eval=TRUE, cache=FALSE}
 # Fetch data, learn and random sets
-learn <- read.table('../stats/rwfit1000_l_params_tvalue_conj.csv',sep=",",header=TRUE)
+learn <- read.table('../stats/rwfit1000_l_params_tvalue_parambeta.csv',sep=",",header=TRUE)
 learn <- cbind(learn$value, learn$p, seperate_meta(as.character(learn$path)))
 colnames(learn) <- c("t","p", "iter", "bold", "model", "design")
 learn <- droplevels(learn[learn$bold != 'box',])
 learn$exp <- rep("learn", nrow(learn))
 
-random <- read.table('../stats/rwfit1000_r_params_tvalue_conj.csv',sep=",",header=TRUE)
+random <- read.table('../stats/rwfit1000_r_params_tvalue_parambeta.csv',sep=",",header=TRUE)
 random <- cbind(random$value, random$p, seperate_meta(as.character(random$path)))
 colnames(random) <- c("t","p", "iter", "bold", "model", "design")
 random <- droplevels(random[random$bold != 'box',])
@@ -218,7 +219,7 @@ levels(bothsig$model) <- c("acc", "box_acc", "box_p", "box_rand",
 # Get mean frac sig, dropping bold/mode match
 dropmatch <- NULL
 for(i in nrow(bothsig)) {
-  m <- grep(bothsig$bold[i], grep(bothsig$model[i]))
+  m <- grep(bothsig$bold[i], bothsig$model[i])
   if(m > 0){
     dropmatch <- c(dropmatch, TRUE)
   } else {
@@ -248,20 +249,22 @@ bothsig$bold <- factor(bothsig$bold, levels=c("acc", "Pr", "RPE", "value", "rand
 bothsig$model <- factor(bothsig$model, levels=c("acc", "Pr", "RPE", "value", "rand"))
 
 # Fig 1
-f1.p1 <- f1.f2.pdist(both[both$design == "Model",], "bottom") + ggtitle("A")
-f1.p2 <- f1.f2.sigpoints(bothsig[bothsig$design == "Model",]) + ggtitle("A")
-print(f1.p1)
-print(f1.p2)
+f1.p1 <- f1.f2.pdist(both[both$design == "Model",], "bottom") + ggtitle("A\nmodel-only")
+# f1.p2 <- f1.f2.sigpoints(bothsig[bothsig$design == "Model",]) + ggtitle("A\nmodel-only")
+f1.p2 <- f1.f2.bar.05(bothsig[bothsig$design == "Model",]) + ggtitle("A\nmodel-only")
+# print(f1.p1)
+# print(f1.p2)
+
 
 # pdf(file="figs/model.pdf", width=5, height=8.5)
 # multiplot(f1.p1, f1.p2, cols=1)
 # dev.off()
 
 # Fig 2
-f2.p1 <- f1.f2.pdist(both[both$design == "Box_and_model",], "bottom") + ggtitle("B")
-f2.p2 <- f1.f2.sigpoints(bothsig[bothsig$design == "Box_and_model",]) + ggtitle("B")
-print(f2.p1)
-print(f2.p2)
+f2.p1 <- f1.f2.pdist(both[both$design == "Box_and_model",], "bottom") + ggtitle("B\nimpulse-and-model")
+f2.p2 <- f1.f2.bar.05(bothsig[bothsig$design == "Box_and_model",]) + ggtitle("B\nimpulse-and-model")
+# print(f2.p1)
+# print(f2.p2)
 
 # pdf(file="figs/box_and_model.pdf", width=5, height=8.5)
 # multiplot(f2.p1, f2.p2, cols=1)
@@ -278,6 +281,59 @@ dev.off()
 pdf(file="figs/f2_p2.pdf", width=5, height=9)
 multiplot(f1.p2, f2.p2, cols=1)
 dev.off()
+
+# Get SDs for the distribution.
+distvars <- NULL
+des.names <- unique(as.character(both$design))
+bold.names <- unique(as.character(both$bold))
+mod.names <- unique(as.character(both$model))
+for(dn in des.names){
+  for(bn in bold.names){
+    for(mn in mod.names){
+        x <- subset(both, design == dn)
+        x <- subset(x, bold == bn)
+        x <- subset(x, model == mn)
+        distvars <- rbind(distvars, c(sd(x$t), dn, bn, mn))
+      }
+  }
+}
+distvars <- data.frame(distvars, stringsAsFactors = FALSE)
+colnames(distvars) <- c("iqr", "desgin", "bold", "model")
+distvars$iqr <- as.numeric(distvars$iqr)
+
+diffvars <- NULL
+des.names <- unique(as.character(distvars$design))
+bold.names <- unique(as.character(distvars$bold))
+mod.names <- unique(as.character(distvars$model))
+for(bn in bold.names){
+  for(mn in mod.names){
+        x <- subset(distvars, bold == bn)
+        x <- subset(x, model == mn)
+        x1 <- x[x$desgin == "Model",]
+        x2 <- x[x$desgin == "Box_and_model",]
+        diffvars <- rbind(diffvars, c(x2$iqr - x1$iqr, bn, mn))
+    }
+}
+diffvars <- data.frame(diffvars, stringsAsFactors = FALSE)
+colnames(diffvars) <- c("iqr", "bold", "model")
+diffvars$iqr <- as.numeric(diffvars$iqr)
+mean(diffvars)
+qplot(data=diffvars, x=model, y=iqr, facets=bold~., geom="point") + theme_bw() +
+theme(
+      # legend.key.size = unit(.3, "cm"),
+      # legend.position = lp,
+      #plot.background = element_blank(),   ## Main facet bkg
+      #panel.grid.major = element_blank(),  ## Major grid lines
+      #panel.grid.minor = element_blank(),  ## Minor grid lines
+      # panel.border = element_blank(),      ## Facet border
+      #panel.background = element_blank(),  ## Facet bkg
+      #panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),       ## y lab
+      #axis.ticks.y=element_blank(),      ## y ticks  
+      strip.text.y = element_text(angle=0), ## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
 ```
     
 Figure 3
@@ -285,71 +341,52 @@ Figure 3
 
 ```{r f3, eval=FALSE}
 # Get data and give cols better names
-set <- read.table('../stats/rwset1000_l_params_tvalue_conj.csv',sep=",",header=TRUE)
+set <- read.table('../stats/rwset1000_r_params_tvalue_conj.csv',sep=",",header=TRUE)
 set <- cbind(set$value, set$p, seperate_meta_set(as.character(set$path)))
-colnames(set)
 colnames(set) <- c("t", "p", "iter", "bold", "bold_alpha", "model", "model_alpha", "design")
-str(set)
 
-# Select data
+# Drop cond when model and bold match
 set <- droplevels(set[set$bold != 'Model',])
-str(set)
 
 # --
 # Figure 3 p1 and 2, density
+# Select rpe and value
 tmps.r <- set[set$bold == 'rpe',]
 tmps.r <- tmps.r[grep('rpe', tmps.r$model),]
-str(tmps.r)
 
 tmps.v <- set[set$bold == 'value',]
 tmps.v <- tmps.v[grep('value', tmps.v$model),]
-str(tmps.v)
 
 tmps.c <- droplevels(rbind(tmps.r, tmps.v))
-str(tmps.c)
 
+# Calc sig cutoffs
 setsig <- f3.sigfac(tmps.c)
 setsig$mean <- setsig$mean * 100  ## into percent
-str(setsig)
 
 # Rename
 tmps.c$bold <- revalue(tmps.c$bold, c("rpe"="RPE"))
 setsig$bold <- revalue(setsig$bold, c("rpe"="RPE"))
 
-f3.p1 <- f3.pdist(tmps.c, "bottom") + ggtitle("A"); print(f3.p1) 
-f3.p2 <- f3.sigpoints(setsig) + ggtitle("B"); print(f3.p2)
+# Plot
+f3.p1 <- f3.pdist(tmps.c, "bottom") + ggtitle("A")
+f3.p2 <- f3.bar.05(setsig) + ggtitle("B")
+# f3.p2 <- f3.sigpoints(setsig) + ggtitle("B"); print(f3.p2)
 
-# Compose plots into the figure
-pdf(file="figs/f3_set.pdf", width=7.25, height=5.5)
-multiplot(f3.p1, f3.p2, cols=1)
+# Compose into figure
+pdf(file="figs/f3_set.pdf", width=7.25, height=8)
+wq::layOut(
+  list(f3.p1+ggtitle("A"), 1:3, 1),
+  list(f3.p2+ggtitle("B"), 4:5, 1)
+)
 dev.off()
-
-# p1 rpe
-# tmps <- set[(set$bold == 'rpe'),]
-# tmps <- tmps[grep('rpe', tmps$model),]
-# str(tmps)
-# setsig.rpe <- f3.sigfac(tmps)
-# setsig.rpe$mean <- setsig.rpe$mean * 100  ## into percent
-# str(setsig.rpe)
-# 
-# f3.p1 <- f3.pdist(tmps, "right"); print(f3.p1)
-# f3.p3 <- f3.sigpoints(setsig.rpe); print(f3.p3)
-# 
-# # p2 value
-# tmps <- set[(set$bold == 'value'),]
-# tmps <- tmps[grep('value', tmps$model),]
-# setsig.val <- f3.sigfac(tmps)
-# setsig.val$mean <- setsig.val$mean * 100  ## into percent
-# 
-# f3.p2 <- f3.pdist(tmps, "right"); print(f3.p2)
-# f3.p4 <- f3.sigpoints(setsig.val); print(f3.p4)
 ``` 
 
 Figure 4
 --------
 
-```{r fig4, eval=FALSE}
-# Get the data, add an exp code for faceting, and reshape
+```{r f4, eval=FALSE}
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# LEARN
 nohrf <- read.table('../data/behave_rwfit100_l.csv',sep=",",header=TRUE)
 nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
 hrf <- read.table('../data/behave_rwfit100_l_hrf.csv',sep=",",header=TRUE)
@@ -369,7 +406,8 @@ both$variable <- revalue(both$variable, c("rpe"="RPE", "p"="Pr"))
 
 # Plot
 f4.p1 <- ggplot(data=both[mask,], aes(x=value, fill=variable)) + 
-    geom_density(alpha=.4, color="black") + 
+    geom_density(color="black", alpha=0.4) + 
+    
     # Match colors in fig 1 and 2
     scale_fill_manual(values=c("#F8766D", "#A3A500", "#00BF7D", "#00B0F6"),
                       name = "Predictor") +
@@ -382,17 +420,596 @@ f4.p1 <- ggplot(data=both[mask,], aes(x=value, fill=variable)) +
       legend.key.size = unit(.3, "cm"),
       legend.position = "bottom",
       #plot.background = element_blank(),   ## Main facet bkg
-      panel.grid.major = element_blank(),  ## Major grid lines
-      panel.grid.minor = element_blank(),  ## Minor grid lines
+      panel.grid.major = element_blank(),   ## Major grid lines
+      panel.grid.minor = element_blank(),   ## Minor grid lines
       #panel.border = element_blank(),      ## Facet border
       panel.background = element_blank(),   ## Facet bkg
       panel.margin = unit(.5, "lines"),
       #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),         ## y lab
+      #axis.ticks.y=element_blank(),        ## y ticks  
+      strip.text.y = element_text(angle=0), ## facet name rotate
+      strip.background = element_blank()    ## Fam1e bckgrnd (grey+box)
+    )
+# print(f4.p1)
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# RANDOM
+# Get the data, add an exp code for faceting, and reshape
+nohrf <- NULL
+hrf <- NULL
+both <- NULL
+nohrf <- read.table('../data/behave_rwfit100_r.csv',sep=",",header=TRUE)
+nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
+hrf <- read.table('../data/behave_rwfit100_r_hrf.csv',sep=",",header=TRUE)
+hrf$exp <- as.factor(rep("After HRF", nrow(hrf)))
+
+both <- rbind(nohrf, hrf)                         ## join hrf and nohrf
+both <- melt(both, id=c("count","index","exp"))   ## reshape
+str(both)
+print(unique(both$variable))
+
+# Filter for plotting
+both <- both[both$value != 0,]                    ## Drop null trials (numerically not ideal)
+mask <- (both$variable == "rpe") | (both$variable == "value") | (both$variable == "p") | (both$variable == "acc")
+
+# rename facets
+both$variable <- revalue(both$variable, c("rpe"="RPE", "p"="Pr"))
+
+# Plot
+f4.p2 <- ggplot(data=both[mask,], aes(x=value, fill=variable)) + 
+    geom_density(color="black", alpha=0.4) + 
+    
+    # Match colors in fig 1 and 2
+    scale_fill_manual(values=c("#F8766D", "#A3A500", "#00BF7D", "#00B0F6"),
+                      name = "Predictor") +
+    facet_grid(.~exp) + 
+    ylab("Density (AU)") +
+    xlab("y") +
+    theme_bw() +
+    #coord_cartesian(ylim=c(0,3)) +
+    theme(
+      legend.key.size = unit(.3, "cm"),
+      legend.position = "bottom",
+      #plot.background = element_blank(),   ## Main facet bkg
+      panel.grid.major = element_blank(),   ## Major grid lines
+      panel.grid.minor = element_blank(),   ## Minor grid lines
+      #panel.border = element_blank(),      ## Facet border
+      panel.background = element_blank(),   ## Facet bkg
+      panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),         ## y lab
+      #axis.ticks.y=element_blank(),        ## y ticks  
+      strip.text.y = element_text(angle=0), ## facet name rotate
+      strip.background = element_blank()    ## Fam1e bckgrnd (grey+box)
+    )
+# print(f4.p1)
+pdf("figs/f4_hrf_effect.pdf", width=4, height=6)
+wq::layOut(
+  list(f4.p1+ggtitle("A\nlearn"), 1:3, 1),
+  list(f4.p2+ggtitle("B\nguess"), 4:6, 1)
+)
+dev.off()
+```
+
+```{r f5}
+# Get the random data, add an exp code for faceting, and reshape
+nohrf <- read.table('../data/behave_rwfit100_r.csv',sep=",",header=TRUE)
+nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
+hrf <- read.table('../data/behave_rwfit100_r_hrf.csv',sep=",",header=TRUE)
+hrf$exp <- as.factor(rep("After HRF", nrow(hrf)))
+
+# Plot correlations between regressors before and after HRF
+
+# Color table def
+col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7", 
+                           "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", 
+                           "#053061"))
+
+# ===========================================================================
+# in nohrf, drop rows where box is not '1'
+nohrf <- subset(nohrf, box == 1)
+
+# ===========================================================================
+# Cor between each, exclude self and off diag. 
+# Doing this by hand rather than cor() then tri.upper()
+# to ensure the labels remain intact. Avoiding a silly error source.
+itercorr <- NULL
+iters <- unique(hrf$count)
+for(i in iters){
+  no <- subset(nohrf, count == i)
+  yes <- subset(hrf, count == i)
+
+  before.v.rpe <- cor(scale(no$value), scale(no$rpe), method="spearman")
+  after.v.rpe <- cor(scale(yes$value), scale(yes$rpe), method="spearman")
+  
+  before.v.p <- cor(scale(no$value), scale(no$p), method="spearman")
+  after.v.p <- cor(scale(yes$value), scale(yes$p), method="spearman")
+  
+  before.v.acc <- cor(scale(no$value), scale(no$acc), method="spearman")
+  after.v.acc <- cor(scale(yes$value), scale(yes$acc), method="spearman")
+  
+  before.rpe.p <- cor(scale(no$rpe), scale(no$p), method="spearman")
+  after.rpe.p <- cor(scale(yes$rpe), scale(yes$p), method="spearman")
+  
+  before.rpe.acc <- cor(scale(no$rpe), scale(no$acc), method="spearman")
+  after.rpe.acc <- cor(scale(yes$rpe), scale(yes$acc), method="spearman")
+  
+  res <- rbind(
+    c('Before', '(value, RPE)', before.v.rpe, i),
+    c('After', '(value, RPE)', after.v.rpe, i),
+    c('Before', '(value, Pr)', before.v.p, i),
+    c('After', '(value, Pr)', after.v.p, i),
+    c('Before', '(value, acc)', before.v.acc, i),
+    c('After', '(value, acc)', after.v.acc, i),
+    c('Before', '(RPE, Pr)', before.rpe.p, i),
+    c('After', '(RPE, Pr)', after.rpe.p, i),
+    c('Before', '(RPE, acc)', before.rpe.acc, i),
+    c('After', '(RPE, acc)', after.rpe.acc, i)
+  )
+  itercorr <- rbind(itercorr, res)
+}
+itercorr <- data.frame(itercorr)
+colnames(itercorr) <- c("HRF", "pair", "r", "count")
+itercorr$r <- as.numeric(as.character(itercorr$r))
+
+# reorder levels for plotting
+itercorr$HRF <- factor(itercorr$HRF, levels=c("Before", "After"))
+itercorr$pair <- factor(itercorr$pair, levels=c("(value, RPE)", "(value, acc)", "(value, Pr)", 
+                                                "(RPE, Pr)", "(RPE, acc)"))
+# Clean
+rm(iters, no, yes, i, after.rpe.acc, after.rpe.p, after.v.acc, after.v.p, 
+   after.v.rpe, before.rpe.acc, before.rpe.p, before.v.acc, before.v.p, 
+   before.v.rpe, res)
+
+# Plot lines
+f5.p1 <- qplot(data=itercorr, x=HRF, y=r, geom="path", group=count, color=I("dark grey"),
+               alpha=I(0.3)) + 
+  geom_point(alpha=0.2) + 
+  ylab("Correlation") + theme_bw () + 
+  geom_hline(yintercept=0, color="grey", linetype="dotted") + 
+  facet_grid(pair~.) + ylim(-1, 1) + 
+  stat_summary(fun.y = mean, geom="point", color="red", size=2.5, alpha=0.9, 
+                 aes(group=interaction(HRF))) +
+  theme(
+      # legend.key.size = unit(.3, "cm"),
+      # legend.position = lp,
+      #plot.background = element_blank(),   ## Main facet bkg
+      #panel.grid.major = element_blank(),  ## Major grid lines
+      #panel.grid.minor = element_blank(),  ## Minor grid lines
+      # panel.border = element_blank(),      ## Facet border
+      #panel.background = element_blank(),  ## Facet bkg
+      #panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
       #axis.text.y=element_blank(),       ## y lab
       #axis.ticks.y=element_blank(),      ## y ticks  
-      strip.text.y = element_text(angle=0),## facet name rotate
+      strip.text.y = element_text(angle=0), ## facet name rotate
       strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
     )
-print(f4.p1)
-ggsave("figs/f4_hrf_effect.pdf", plot=f4.p1, width=4, height=2.5)
+
+# ===========================================================================
+# Break before up by Quartiles, plot those dists, then plot After
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++
+# broken up by Before's Quartiles - ALL DATA COMBINED
+itercorr.b <- subset(itercorr, HRF == "Before")
+itercorr.a <- subset(itercorr, HRF == "After")
+
+# Diff
+itercorr.diff <- data.frame(diff=itercorr.a$r - itercorr.b$r, 
+                            r.a=itercorr.a$r,
+                            r.b=itercorr.b$r,
+                            pair.a=itercorr.a$pair,
+                            pair.b=itercorr.b$pair,
+                            count.a=itercorr.a$count,
+                            count.b=itercorr.b$count)
+
+# Quantiles for all
+brks <- with(itercorr.b, quantile(r, probs = c(0, 0.25, 0.5, 0.75, 1)))
+itercorr.b.quan <- within(itercorr.b, 
+                            quartile <- cut(r, breaks = brks, labels = c(
+                              "0-25", "26-50", "51-75", "76-100"), 
+                              include.lowest = TRUE))
+itercorr.a.quan <- itercorr.a
+itercorr.a.quan$quartile <- itercorr.b.quan$quartile
+itercorr.quan.all <- rbind(itercorr.b.quan, itercorr.a.quan)
+
+rm(itercorr.a, itercorr.b, itercorr.a.quan, itercorr.b.quan)
+
+# --
+# Plot
+f5.p2 <- qplot(data=itercorr.quan.all, x=HRF, y=r, color=I("dark grey"), 
+               geom="path", alpha=I(0.3), facets=quartile~., 
+               group=interaction(count, pair)) + ylim(-1,1) +
+  geom_point(alpha=0.2) + 
+  theme_bw() + 
+  geom_hline(yintercept=0, color="grey", linetype="dotted") +
+  ylab("Correlation") +
+  stat_summary(fun.y = mean, geom="point", color="red", size=2.5, alpha=0.9, 
+                 aes(group=interaction(HRF))) +
+  theme(
+      # legend.key.size = unit(.3, "cm"),
+      # legend.position = lp,
+      #plot.background = element_blank(),   ## Main facet bkg
+      #panel.grid.major = element_blank(),  ## Major grid lines
+      #panel.grid.minor = element_blank(),  ## Minor grid lines
+      # panel.border = element_blank(),      ## Facet border
+      #panel.background = element_blank(),  ## Facet bkg
+      #panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),       ## y lab
+      #axis.ticks.y=element_blank(),      ## y ticks  
+      strip.text.y = element_text(angle=0), ## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+
+pdf("figs/f5.pdf", width=7, height=7)
+wq::layOut(
+  list(f5.p1+ggtitle("A\npairs"), 1, 1:2),
+  list(f5.p2+ggtitle("B\nquartiles"), 1, 3:4)
+)
+dev.off()
+```
+
+```{r 5_many_lin_models}
+# Get the random data, add an exp code for faceting, and reshape
+nohrf <- read.table('../data/behave_rwfit100_r.csv',sep=",",header=TRUE)
+nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
+hrf <- read.table('../data/behave_rwfit100_r_hrf.csv',sep=",",header=TRUE)
+hrf$exp <- as.factor(rep("After HRF", nrow(hrf)))
+
+# Plot correlations between regressors before and after HRF
+
+# Color table def
+col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7", 
+                           "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", 
+                           "#053061"))
+
+# ===========================================================================
+# in nohrf, drop rows where box is not '1'
+nohrf <- subset(nohrf, box == 1)
+
+itersd <- NULL
+iters <- unique(hrf$count)
+for(i in iters){
+  no <- subset(nohrf, count == i)
+  yes <- subset(hrf, count == i)
+
+  before.v.rpe <- sd(no$value) - sd(no$rpe)
+  after.v.rpe <- sd(yes$value) - sd(yes$rpe)
+  
+  before.v.p <- sd(no$value) - sd(no$p)
+  after.v.p <- sd(yes$value) - sd(yes$p)
+  
+  before.v.acc <- sd(no$value) - sd(no$acc)
+  after.v.acc <- sd(yes$value) - sd(yes$acc)
+  
+  before.rpe.p <- sd(no$rpe) - sd(no$p)
+  after.rpe.p <- sd(yes$rpe) - sd(yes$p)
+  
+  before.rpe.acc <- sd(no$rpe) - sd(no$acc)
+  after.rpe.acc <- sd(yes$rpe) - sd(yes$acc)
+  
+  res <- rbind(
+    c('Before', '(value, RPE)', before.v.rpe, i),
+    c('After', '(value, RPE)', after.v.rpe, i),
+    c('Before', '(value, Pr)', before.v.p, i),
+    c('After', '(value, Pr)', after.v.p, i),
+    c('Before', '(value, acc)', before.v.acc, i),
+    c('After', '(value, acc)', after.v.acc, i),
+    c('Before', '(RPE, Pr)', before.rpe.p, i),
+    c('After', '(RPE, Pr)', after.rpe.p, i),
+    c('Before', '(RPE, acc)', before.rpe.acc, i),
+    c('After', '(RPE, acc)', after.rpe.acc, i)
+  )
+  itersd <- rbind(itersd, res)
+}
+itersd <- data.frame(itersd)
+colnames(itersd) <- c("HRF", "pair", "stdev", "count")
+itersd$stdev <- as.numeric(as.character(itersd$stdev))
+cor.test(subset(itersd, HRF=="Before")$stdev, itercorr.diff$diff)
+
+itersd.b <- subset(itersd, HRF == "Before")
+itersd.a <- subset(itersd, HRF == "After")
+itersd.diff <- data.frame(diff=itersd.a$stdev - itersd.b$stdev, 
+                            r.a=itersd.a$stdev,
+                            r.b=itersd.b$stdev,
+                            pair.a=itersd.a$pair,
+                            pair.b=itersd.b$pair,
+                            count.a=itersd.a$count,
+                            count.b=itersd.b$count)
+
+itersd.diff$rdiff <- itercorr.diff$diff
+
+m1 <- lm(itersd.diff, formula=r.a~rdiff)
+summary(m1)
+
+# Mean
+itermean <- NULL
+iters <- unique(hrf$count)
+for(i in iters){
+  no <- subset(nohrf, count == i)
+  yes <- subset(hrf, count == i)
+
+  before.v.rpe <- mean(no$value) - mean(no$rpe)
+  after.v.rpe <- mean(yes$value) - mean(yes$rpe)
+  
+  before.v.p <- mean(no$value) - mean(no$p)
+  after.v.p <- mean(yes$value) - mean(yes$p)
+  
+  before.v.acc <- mean(no$value) - mean(no$acc)
+  after.v.acc <- mean(yes$value) - mean(yes$acc)
+  
+  before.rpe.p <- mean(no$rpe) - mean(no$p)
+  after.rpe.p <- mean(yes$rpe) - mean(yes$p)
+  
+  before.rpe.acc <- mean(no$rpe) - mean(no$acc)
+  after.rpe.acc <- mean(yes$rpe) - mean(yes$acc)
+  
+  res <- rbind(
+    c('Before', '(value, RPE)', before.v.rpe, i),
+    c('After', '(value, RPE)', after.v.rpe, i),
+    c('Before', '(value, Pr)', before.v.p, i),
+    c('After', '(value, Pr)', after.v.p, i),
+    c('Before', '(value, acc)', before.v.acc, i),
+    c('After', '(value, acc)', after.v.acc, i),
+    c('Before', '(RPE, Pr)', before.rpe.p, i),
+    c('After', '(RPE, Pr)', after.rpe.p, i),
+    c('Before', '(RPE, acc)', before.rpe.acc, i),
+    c('After', '(RPE, acc)', after.rpe.acc, i)
+  )
+  itermean <- rbind(itermean, res)
+}
+itermean <- data.frame(itermean)
+colnames(itermean) <- c("HRF", "pair", "M", "count")
+itermean$M <- as.numeric(as.character(itermean$M))
+cor.test(subset(itermean, HRF=="Before")$M, itercorr.diff$diff)
+
+itermean.b <- subset(itermean, HRF == "Before")
+itermean.a <- subset(itermean, HRF == "After")
+itermean.diff <- data.frame(diff=itermean.a$M - itermean.b$M, 
+                            r.a=itermean.a$M,
+                            r.b=itermean.b$M,
+                            pair.a=itermean.a$pair,
+                            pair.b=itermean.b$pair,
+                            count.a=itermean.a$count,
+                            count.b=itermean.b$count)
+
+itermean.diff$rdiff <- itercorr.diff$diff
+
+m1 <- lm(itermean.diff, formula=r.a~rdiff)
+summary(m1)
+
+iterstats.diff <- data.frame(
+  M.diff=itermean.diff$diff, 
+  M.a=itermean.diff$r.a, 
+  M.b=itermean.diff$r.b, 
+  SD.diff=itersd.diff$diff,
+  SD.a=itersd.diff$r.a,
+  SD.b=itersd.diff$r.b,
+  r.diff=itercorr.diff$diff, 
+  r.a=itercorr.diff$r.a,
+  r.b=itercorr.diff$r.b,
+  pair.a=itercorr.diff$pair.a,
+  pair.b=itercorr.diff$pair.b)
+
+m.p <- lm(r.diff~pair.a, iterstats.diff)
+summary(m.p)
+plot(m.p)
+
+m.r <- lm(r.diff~r.b, iterstats.diff)
+summary(m.r)
+plot(m.r)
+
+m.p.r <- lm(r.diff~pair.a+r.b, iterstats.diff)
+summary(m.p.r)
+plot(m.p)
+
+anova(m.r, m.p.r)
+# ----
+
+m.a <- lm(r.diff~ M.b, iterstats.diff)
+summary(m.a)
+plot(m.a)
+
+m.sd <- lm(r.diff~SD.b, iterstats.diff)
+summary(m.sd)
+plot(m.sd)
+
+qplot(data=iterstats.diff, x=abs(r.b), y=abs(r.diff), geom="point", color=pair.a) + stat_smooth(method = lm, se = FALSE) + theme_bw()
+
+qplot(data=iterstats.diff, x=r.b, geom="density", color=pair.a)
+
+m.join <- lm(r.diff~SD.a+M.a+r.a, iterstats.diff)
+summary(m.join)
+plot(m.join)
+
+library(gvlma)
+gvmodel <- gvlma(m.join)
+summary(gvmodel)
+plot(gvmodel)
+
+m1 <- lm(itercorr.diff, formula=diff~r.a)
+m2 <- lm(itercorr.diff, formula=diff~pair.a)
+m3 <- lm(itercorr.diff, formula=diff~pair.a+r.a)
+summary(m3)
+anova(m2,m3)
+```
+
+```{r f6}
+library("corrplot")
+
+# Get the random data, add an exp code for faceting, and reshape
+nohrf <- read.table('../data/behave_rwfit100_r.csv',sep=",",header=TRUE)
+nohrf$exp <- as.factor(rep("Before HRF", nrow(nohrf)))
+hrf <- read.table('../data/behave_rwfit100_r_hrf.csv',sep=",",header=TRUE)
+hrf$exp <- as.factor(rep("After HRF", nrow(hrf)))
+
+# Plot correlations between regressors before and after HRF
+
+# Color table def
+col2 <- colorRampPalette(c("#67001F", "#B2182B", "#D6604D", "#F4A582", "#FDDBC7", 
+                           "#FFFFFF", "#D1E5F0", "#92C5DE", "#4393C3", "#2166AC", 
+                           "#053061"))
+
+# ===========================================================================
+# in nohrf, drop rows where box is not '1'
+nohrf <- subset(nohrf, box == 1)
+
+# Calc difference in correlation for hrf, cor(nohrf) - cor(hrf)
+nohrf.sel <- nohrf[,c("acc", "p", "rpe", "value")]
+colnames(nohrf.sel) <- c("acc", "Pr", "RPE", "value")
+
+hrf.sel <- hrf[,c("acc", "p", "rpe", "value")]
+colnames(hrf.sel) <- c("acc", "Pr", "RPE", "value")
+
+cbef <- cor(nohrf.sel, method = "spearman")
+caft <- cor(hrf.sel, method = "spearman")
+cdiff <- caft - cbef
+
+# and plot
+pdf(file="figs/f6.pdf")
+corrplot(cdiff, col=rev(col2(100)), method="shade", is.corr=FALSE, 
+         tl.col = "black", addCoef.col="black", diag = FALSE, type = "upper",
+          cl.ratio = 0.2, cl.align = "l")
+dev.off()
+```
+
+```{r f7}
+alphas <- c("01", "09")
+nohrf <- NULL
+hrf <- NULL
+for(sa in alphas){
+  no.name <- paste('../data/behave_rwset100_r_', sa, '.csv', sep="")
+  yes.name <- paste('../data/behave_rwset100_r_', sa, '_hrf.csv', sep="")
+  
+  no <- read.table(no.name,sep=",",header=TRUE)
+  yes <- read.table(yes.name,sep=",",header=TRUE)
+  
+  no$pred_alpha <- as.factor(rep(sa, nrow(no)))
+  yes$pred_alpha <- as.factor(rep(sa, nrow(yes)))
+  
+  no$HRF <- as.factor(rep("Before", nrow(no)))
+  yes$HRF <- as.factor(rep("After", nrow(yes)))
+  
+  nohrf <- rbind(nohrf, no)
+  hrf <- rbind(hrf, yes)
+}
+nohrf <- subset(nohrf, box == 1)
+
+# Clean
+rm(no, yes, no.name, yes.name, sa)
+
+# Correlate the alphas
+itercorra <- NULL
+for(sa1 in alphas){
+  for(sa2 in alphas){
+    if(sa1 == sa2){
+      next
+    }
+    
+    for(i in unique(nohrf$count)){
+      no.i <- subset(nohrf, count == i)
+      yes.i <- subset(hrf, count == i)
+      
+      no.rpe1 <- subset(no.i, pred_alpha == sa1)$rpe
+      no.rpe2 <- subset(no.i, pred_alpha == sa2)$rpe
+      no.rpe.1.2 <- cor(no.rpe1, no.rpe2, method="pearson")
+      
+      yes.rpe1 <- subset(yes.i, pred_alpha == sa1)$rpe
+      yes.rpe2 <- subset(yes.i, pred_alpha == sa2)$rpe
+      yes.rpe.1.2 <- cor(yes.rpe1, yes.rpe2, method="pearson")
+      
+      no.value1 <- subset(no.i, pred_alpha == sa1)$value
+      no.value2 <- subset(no.i, pred_alpha == sa2)$value
+      no.value.1.2 <- cor(no.value1, no.value2, method="pearson")
+      
+      yes.value1 <- subset(yes.i, pred_alpha == sa1)$value
+      yes.value2 <- subset(yes.i, pred_alpha == sa2)$value
+      yes.value.1.2 <- cor(yes.value1, yes.value2, method="pearson")
+    
+      res <- rbind(
+        c('Before', 'rpe', sa1, sa2, no.rpe.1.2, i),
+        c('After', 'rpe', sa1, sa2, yes.rpe.1.2, i),
+        c('Before', 'value', sa1, sa2, no.value.1.2, i),
+        c('After', 'value', sa1, sa2, yes.value.1.2, i)
+      )
+      itercorra <- rbind(itercorra, res)
+    }
+  }
+}
+# rm(i, no.i, no.rpe.1.2, no.rpe1, no.rpe2, no.value.1.2, no.value1, no.value2,
+#    yes.i, yes.rpe.1.2, yes.rpe1, yes.rpe2, yes.value.1.2, yes.value1, yes.value2,
+#    sa1, sa2, res)
+itercorra <- data.frame(itercorra)
+colnames(itercorra) <- c("HRF", "y", "alpha1", "alpha2", "r", "count")
+itercorra$r <- as.numeric(as.character(itercorra$r))
+itercorra$HRF <- factor(itercorra$HRF, levels=c("Before", "After"))
+
+# Plot
+qplot(data=itercorra, x=HRF, y=r, geom="path", group=count, alpha=I(0.2)) + theme_bw() + geom_point() + facet_grid(.~y) + scale_color_hue(h=c(90, 180)) # + geom_boxplot(aes(group=interaction(HRF,y)))
+
+# Code by increase or decrease?
+qplot(data=subset(itercorra, y=="value"), x=HRF, y=r, geom="path", group=count, color=I("dark grey"), alpha=I(0.3)) + 
+  geom_point(alpha=0.2) + 
+  ylab("Correlation") + theme_bw () + 
+  geom_hline(yintercept=0, color="grey", linetype="dotted") + 
+  facet_grid(alpha1~alpha2) + ylim(-1, 1) + 
+  stat_summary(fun.y = mean, geom="point", color="red", size=2.5, alpha=0.9, 
+                 aes(group=interaction(HRF))) +
+  theme(
+      # legend.key.size = unit(.3, "cm"),
+      # legend.position = lp,
+      #plot.background = element_blank(),   ## Main facet bkg
+      #panel.grid.major = element_blank(),  ## Major grid lines
+      #panel.grid.minor = element_blank(),  ## Minor grid lines
+      # panel.border = element_blank(),      ## Facet border
+      #panel.background = element_blank(),  ## Facet bkg
+      #panel.margin = unit(.5, "lines"),
+      #panel.margin = unit(1.7, "lines"),
+      #axis.text.y=element_blank(),       ## y lab
+      #axis.ticks.y=element_blank(),      ## y ticks  
+      strip.text.y = element_text(angle=0), ## facet name rotate
+      strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+    )
+```
+
+```{r fig4_bbhe}
+bbeh <- read.table('../stats/bbeh100_params_tvalue_conj.csv',sep=",",header=TRUE)
+bbeh <- cbind(bbeh$value, bbeh$p, seperate_meta_bbeh(as.character(bbeh$path)))
+colnames(bbeh) <- c("t", "sig_level", "iter", "bold", "model")
+# Drop box BOLD
+bbeh <- subset(bbeh, bold != "box")
+bbeh <- droplevels(bbeh)
+bbeh <- subset(bbeh, bold != model)
+bbeh <- droplevels(bbeh)
+
+# bbeh <- subset(bbeh, bold_beh != model_beh)
+qplot(data=bbeh, x=t, fill=model, geom="density") + facet_grid(.~bold) +
+  geom_vline(xintercept = 1.9, color="darkorange2") +  ## p =.05
+  geom_vline(xintercept = 3.9, color="darkred") +  ## p =.0001
+  xlim(c(-5,15)) +
+  xlab("t-value") +
+  ylim(c(0,0.4)) +
+  scale_fill_discrete(name="Predictor") +
+  #scale_y_continuous(breaks=c(0., 0.2, 0.4)) +
+  ylab("Density (AU)") +
+  #ggtitle("Model") +
+  theme_bw() + 
+  theme(
+    legend.key.size = unit(.3, "cm"),
+    #plot.background = element_blank(),   ## Main facet bkg
+    panel.grid.major = element_blank(),  ## Major grid lines
+    panel.grid.minor = element_blank(),  ## Minor grid lines
+    #panel.border = element_blank(),      ## Facet border
+    panel.background = element_blank(),  ## Facet bkg
+    panel.margin = unit(.5, "lines"),
+    #panel.margin = unit(1.7, "lines"),
+    #axis.text.y=element_blank(),       ## y lab
+    #axis.ticks.y=element_blank(),      ## y ticks  
+    strip.text.y = element_text(angle=0),## facet name rotate
+    strip.background = element_blank()   ## Fam1e bckgrnd (grey+box)
+  )
+  
 ```

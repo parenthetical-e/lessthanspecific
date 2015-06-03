@@ -1,6 +1,26 @@
 require(Hmisc)
 require(plyr)
 
+seperate_meta_bbeh <- function(paths){  
+  iters <- NULL
+  bolds <- NULL
+  models <- NULL
+  
+  for(path in paths){
+    sp <- strsplit(as.character(path), split='_')[[1]]
+    if(sp[2] == "box"){
+      iters <- c(iters, sp[1])
+      bolds <- c(bolds, sp[2])
+      models <- c(models, paste(sp[4:5], collapse = "_"))
+    } else {
+      iters <- c(iters, sp[1])
+      bolds <- c(bolds, paste(sp[2:3], collapse = "_"))
+      models <- c(models, paste(sp[5:6], collapse = "_"))
+    }  
+  }
+  data.frame('iter'=iters, 'bold'=bolds, 'model'=models)
+}
+
 seperate_meta <- function(paths){
   # For rwfit metadata
   iters <- NULL
