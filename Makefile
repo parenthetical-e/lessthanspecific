@@ -37,6 +37,12 @@ rwset:
 	$(MAKE) -f rw.Makefile rwsetBoth
 	$(MAKE) -f stats.rwset.Makefile all
 
+# Separation experiment
+# 1000 iterations	
+bbheh:
+	$(MAKE) -f rw.Makefile rwsetBoth
+	$(MAKE) -f stats.rwset.Makefile all
+
 # ----------------------------------------------------------------------------
 # MISC:
 # Create and save behave and RL data
