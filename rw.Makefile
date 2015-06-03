@@ -10,6 +10,11 @@ data/rwfit10.hdf5: models.ini
 		--behave learn \
 		--models models.ini 
 
+data/bbeh10.hdf5: bbehmodels.ini
+	python bbeh.py data/bbeh10.hdf5 \
+		10 \
+		--n_trials 60 \
+		--models bbehmodels.ini 
 
 # --------------------------------
 # Save all behave data (for debug)
@@ -79,8 +84,74 @@ data/rwfit1000_r.hdf5: moremodels.ini
 		--behave random \
 		--models moremodels.ini 
 
+# Multivariate models
+multi : data/rwfit1000_l_multi_acc.hdf5 data/rwfit1000_r_multi_acc.hdf5 data/rwfit1000_r_multi_box_acc.hdf5 data/rwfit1000_l_multi_box_acc.hdf5
 
-		
+
+data/rwfit1000_l_multi_acc.hdf5: multivar_acc.ini
+	python rwfit.py data/rwfit1000_l_multi_acc.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave learn \
+		--models multivar_acc.ini \
+		--orth acc
+
+data/rwfit1000_r_multi_acc.hdf5: multivar_acc.ini
+	python rwfit.py data/rwfit1000_r_multi_acc.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave random \
+		--models multivar_acc.ini \
+		-- orth acc
+
+data/rwfit1000_l_multi_box_acc.hdf5: multivar_box_acc.ini
+	python rwfit.py data/rwfit1000_l_multi_box_acc.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave learn \
+		--models multivar_box_acc.ini \
+		--orth box acc
+
+data/rwfit1000_r_multi_box_acc.hdf5: multivar_box_acc.ini
+	python rwfit.py data/rwfit1000_r_multi_box_acc.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave random \
+		--models multivar_box_acc.ini \
+		-- orth box acc
+
+# ISI test between values and RPE
+data/rwfit1000_l_isi.hdf5: isi.ini
+	python rwfit.py data/rwfit1000_l_isi.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave learn \
+		--models isi.ini \
+		--isi value rpe
+
+data/rwfit1000_r_isi.hdf5: isi.ini
+	python rwfit.py data/rwfit1000_r_isi.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave random \
+		--models moremodels.ini \
+		--isi value rpe
+
+# ---
+# Between Beh modes
+# ---
+data/bbeh100.hdf5: bbehmodels.ini
+	python bbeh.py data/bbeh100.hdf5 \
+		100 \
+		--n_trials 60 \
+		--models bbehmodels.ini 
+
+data/bbeh1000.hdf5: bbehmodels.ini
+	python bbeh.py data/bbeh1000.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--models bbehmodels.ini 
+
 # ---
 # SET
 # ---
@@ -143,4 +214,12 @@ data/rwset1000_r.hdf5: setmodels.ini
 		--behave random \
 		--alpha 0.1 0.3 0.5 0.7 0.9 \
 		--models setmodels.ini 
+
+data/rwset1000_ro.hdf5: setmodels_o.ini
+	python rwset.py data/rwset1000_ro.hdf5 \
+		1000 \
+		--n_trials 60 \
+		--behave random \
+		--alpha 0.1 0.3 0.5 0.7 0.9 \
+		--models setmodels_o.ini 
 
