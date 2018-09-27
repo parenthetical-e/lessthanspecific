@@ -1,7 +1,7 @@
 lessthanspecific
 ================
 
-**The manuscript matching these routines is under review at Frontiers.**
+**The manuscript matching these routines is under review at PeerJ.**
 
 Create and analyze the 'less than specific' data.
 
